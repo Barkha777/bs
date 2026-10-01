@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Universal Barcode Scanner & Data Extraction Engine (.NET 8)</title>
+  <meta name="description" content="Universal physical barcode scanner and metadata extraction engine built with C# and .NET 8. Scans any barcode and identifies all data contained in it.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&family=JetBrains+Mono:wght@400;500;600;700&family=Karla:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Header Bar -->
+  <header class="app-header">
+    <div class="header-inner container">
+      <div class="brand-group">
+        <div class="brand-badge">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M3 5v14"></path><path d="M8 5v14"></path><path d="M12 5v14"></path><path d="M17 5v14"></path><path d="M21 5v14"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">ScanCore <span class="badge-accent">.NET 8</span></h1>
+          <p class="brand-sub">Universal Physical Barcode Identifier & Data Extractor</p>
+        </div>
+      </div>
+      
+      <div class="header-actions">
+        <div class="system-status-chip" id="systemStatusChip">
+          <span class="status-indicator"></span>
+          <span id="systemStatusText">Connecting to .NET Engine...</span>
+        </div>
+        <button id="btnThemeToggle" class="theme-btn" title="Toggle Light / Dark theme">
+          <span id="themeBtnIcon">🌙</span>
+          <span id="themeBtnText">Night Sky</span>
+        </button>
+        <button id="btnHeaderCodeSnippet" class="btn btn-secondary btn-sm" title="View C# code snippet for main team">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+          Team Code Snippet
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Layout -->
+  <main class="main-wrapper container">
+    <!-- Top Highlights Banner -->
+    <div class="announcement-banner">
+      <div class="banner-pill">Objective-Focused</div>
+      <div class="banner-text">
+        <strong>Direct Barcode Intelligence:</strong> Optically decodes any barcode from physical products, extracts the raw data, identifies format & payload type, and fetches universal catalog metadata across any product category.
+      </div>
+      <div class="banner-meta">
+        <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Any Product Category</span>
+        <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> 100% C# Native</span>
+      </div>
+    </div>
+
+    <!-- Dual-Mode Workflow Selector (Option 1: Check Availability, Option 2: Scan & Save Product) -->
+    <div class="mode-selector-wrapper">
+      <div class="mode-selector-top">
+        <div class="mode-label-group">
+          <span class="mode-pulse-indicator"></span>
+          <span class="mode-label-title">Active Scanning Mode</span>
+          <span class="mode-current-badge" id="activeModeBadge">Option 1: Check Availability</span>
+        </div>
+        <button class="btn-inventory-drawer" id="btnOpenInventory" title="Open saved products inventory">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+          <span>Saved Inventory</span>
+          <span class="inventory-count-badge" id="inventoryCountBadge">0</span>
+        </button>
+      </div>
+
+      <div class="mode-options-grid">
+        <!-- Option 1 Card -->
+        <button class="mode-card-option active" id="btnModeCheck" data-mode="check" type="button">
+          <div class="mode-icon-box">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><path d="m9 11 2 2 4-4"></path></svg>
+          </div>
+          <div class="mode-card-details">
+            <span class="mode-badge-pill">Option 1</span>
+            <div class="mode-card-title">
+              <span>Check Product Availability</span>
+              <span class="mode-active-indicator">SELECTED</span>
+            </div>
+            <p class="mode-card-desc">Scan to check if product is available in inventory. If saved, shows stock count & details; if not, alerts you.</p>
+          </div>
+        </button>
+
+        <!-- Option 2 Card -->
+        <button class="mode-card-option mode-save" id="btnModeSave" data-mode="save" type="button">
+          <div class="mode-icon-box">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+          </div>
+          <div class="mode-card-details">
+            <span class="mode-badge-pill">Option 2</span>
+            <div class="mode-card-title">
+              <span>Scan & Save Product</span>
+              <span class="mode-active-indicator">SELECTED</span>
+            </div>
+            <p class="mode-card-desc">Scan to register into inventory. If scanned before, instantly displays original saved product and history.</p>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Dual Column Workspace -->
+    <div class="workspace-grid">
+      
+      <!-- Left Column: Scanner & Input Controls -->
+      <section class="scanner-card card">
+        <!-- Navigation Tabs -->
+        <div class="tabs-nav" role="tablist">
+          <button class="tab-btn active" id="tabUpload" data-target="panelUpload" role="tab">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            Upload Image
+          </button>
+          <button class="tab-btn" id="tabLiveCam" data-target="panelLiveCam" role="tab">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+            Live Camera
+          </button>
+          <button class="tab-btn" id="tabManual" data-target="panelManual" role="tab">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"></rect><line x1="6" y1="8" x2="6" y2="8"></line><line x1="10" y1="8" x2="10" y2="8"></line><line x1="14" y1="8" x2="14" y2="8"></line><line x1="18" y1="8" x2="18" y2="8"></line></svg>
+            Direct Input
+          </button>
+          <button class="tab-btn" id="tabGenerator" data-target="panelGenerator" role="tab">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><rect x="7" y="7" width="3" height="9"></rect><rect x="14" y="7" width="3" height="5"></rect></svg>
+            Generator
+          </button>
+        </div>
+
+        <!-- Panel 1: Image Upload / Drop -->
+        <div class="tab-panel active" id="panelUpload">
+          <div class="drop-zone" id="dropZone">
+            <input type="file" id="fileInput" accept="image/*" style="display:none;">
+            <div class="drop-zone-content">
+              <div class="drop-icon">
+                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+              </div>
+              <h3>Drag & Drop Any Barcode Image</h3>
+              <p>Supports product photos, screenshots, packaging labels, and custom barcodes</p>
+              <button type="button" class="btn btn-secondary btn-sm" id="btnBrowseFiles">Browse File</button>
+            </div>
+            <!-- Upload Preview Area -->
+            <div class="upload-preview" id="uploadPreview" style="display:none;">
+              <img id="previewImage" alt="Barcode preview">
+              <div class="preview-overlay">
+                <span id="previewFileName">filename.jpg</span>
+                <button type="button" class="btn btn-sm btn-outline" id="btnRemoveFile">Change Image</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="upload-actions">
+            <button id="btnProcessUpload" class="btn btn-primary w-full" disabled>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Decode in C# & Extract Available Data
+            </button>
+          </div>
+        </div>
+
+        <!-- Panel 2: Live Camera Scanner -->
+        <div class="tab-panel" id="panelLiveCam">
+          <div class="camera-viewport-wrapper">
+            <video id="cameraVideo" autoplay playsinline muted></video>
+            <canvas id="captureCanvas" style="display:none;"></canvas>
+
+            <div class="scanner-reticle" id="scannerReticle">
+              <div class="reticle-corner corner-tl"></div>
+              <div class="reticle-corner corner-tr"></div>
+              <div class="reticle-corner corner-bl"></div>
+              <div class="reticle-corner corner-br"></div>
+              <div class="laser-sweep" id="laserSweep"></div>
+            </div>
+
+            <div class="camera-placeholder" id="cameraPlaceholder">
+              <div class="placeholder-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              </div>
+              <h3>Camera Inactive</h3>
+              <p>Click "Start Camera" to scan physical barcodes in real-time from webcam or phone camera.</p>
+            </div>
+          </div>
+
+          <div class="camera-controls">
+            <button id="btnStartCamera" class="btn btn-primary">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              Start Camera Scanner
+            </button>
+            <button id="btnStopCamera" class="btn btn-outline" style="display:none;">
+              Stop Camera
+            </button>
+            <button id="btnSwitchCamera" class="btn btn-secondary btn-icon" title="Switch camera" style="display:none;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+            </button>
+            <button id="btnCaptureFrame" class="btn btn-accent" style="display:none;">
+              Capture Frame Now
+            </button>
+          </div>
+          <div class="camera-status-bar" id="cameraStatusBar">
+            <span class="pulse-dot"></span> <span id="cameraStatusText">Camera is ready. Click Start to begin.</span>
+          </div>
+        </div>
+
+        <!-- Panel 3: Manual Direct Input -->
+        <div class="tab-panel" id="panelManual">
+          <div class="manual-input-box">
+            <label for="barcodeInput" class="input-label">Enter Any Barcode / SKU / Serial / URL</label>
+            <div class="input-group">
+              <div class="input-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5v14"></path><path d="M8 5v14"></path><path d="M12 5v14"></path><path d="M17 5v14"></path><path d="M21 5v14"></path></svg>
+              </div>
+              <input type="text" id="barcodeInput" class="form-input" placeholder="e.g. https://github.com/... or 888462062908" autocomplete="off">
+              <button id="btnLookupManual" class="btn btn-primary">
+                Analyze
+              </button>
+            </div>
+            <div class="format-hint" id="formatHint">Detected format: Waiting for input...</div>
+          </div>
+
+          <!-- Quick Test Diverse Sample Barcodes -->
+          <div class="sample-barcodes-section">
+            <div class="section-label">
+              <span>Quick Test Diverse Barcodes (Electronics, Books, Web URLs, Industrial)</span>
+            </div>
+            <div class="sample-chips-grid" id="sampleChipsContainer">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 4: Barcode Generator & Tester -->
+        <div class="tab-panel" id="panelGenerator">
+          <div class="generator-box">
+            <p class="section-desc">Generate crisp barcode images in C# on-the-fly to test scanner optical decoding accuracy.</p>
+            
+            <div class="form-row">
+              <div class="form-col">
+                <label for="genContent" class="input-label">Barcode Value (Text, Number, URL)</label>
+                <input type="text" id="genContent" class="form-input" value="https://github.com/Barkha777">
+              </div>
+              <div class="form-col">
+                <label for="genFormat" class="input-label">Format Standard</label>
+                <select id="genFormat" class="form-select">
+                  <option value="CODE_128" selected>Code 128 (Alphanumeric / URLs / SKUs)</option>
+                  <option value="EAN_13">EAN-13 (International Retail)</option>
+                  <option value="UPC_A">UPC-A (North American Retail)</option>
+                  <option value="CODE_39">Code 39 (Industrial & Military)</option>
+                  <option value="QR_CODE">QR Code (2D Data Matrix)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="generator-preview-card">
+              <div class="gen-img-container">
+                <img id="generatedBarcodeImg" alt="Generated Barcode Preview">
+              </div>
+              <div class="gen-buttons">
+                <button id="btnRefreshBarcode" class="btn btn-secondary btn-sm">Regenerate</button>
+                <button id="btnTestGeneratedBarcode" class="btn btn-accent btn-sm">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  Scan & Extract Details
+                </button>
+                <a id="btnDownloadBarcode" class="btn btn-outline btn-sm" download="barcode.png">Download PNG</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scanner Footer -->
+        <div class="scanner-footer">
+          <div class="meta-item">
+            <span class="meta-label">Optical Engine</span>
+            <span class="meta-val">C# / ZXing.Net 0.16</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Symbologies</span>
+            <span class="meta-val">Code 128, EAN, UPC, QR, Code 39</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Coverage</span>
+            <span class="meta-val">Any Physical Item</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Barcode & Product Data Display Card -->
+      <section class="results-card card" id="resultsCard">
+        <!-- Results Header -->
+        <div class="results-header">
+          <div class="results-title-group">
+            <h2 class="results-heading">Barcode Data Identification</h2>
+            <p class="results-sub">Direct data extracted and classified from the barcode</p>
+          </div>
+          <div id="verifiedBadge" class="status-badge badge-idle">
+            <span class="badge-dot"></span>
+            <span id="verifiedBadgeText">Awaiting Scan</span>
+          </div>
+        </div>
+
+        <!-- Loading State Indicator -->
+        <div class="results-loading" id="resultsLoading" style="display:none;">
+          <div class="loader-circle"></div>
+          <p class="loading-text">Decoding optical barcode with C# ZXing engine...</p>
+        </div>
+
+        <!-- Empty State View -->
+        <div class="results-empty" id="resultsEmpty">
+          <div class="empty-graphic">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+              <path d="M3 5v14"></path><path d="M8 5v14"></path><path d="M12 5v14"></path><path d="M17 5v14"></path><path d="M21 5v14"></path>
+              <rect x="2" y="2" width="20" height="20" rx="2" stroke-dasharray="4 4"></rect>
+            </svg>
+          </div>
+          <h3>Ready to Identify Barcode Data</h3>
+          <p>Upload any barcode image (including your newly made barcode), use the camera, or enter any code on the left to extract the data contained in it.</p>
+        </div>
+
+        <!-- Populated Product Details View -->
+        <div class="product-view" id="productView" style="display:none;">
+          
+          <!-- Saved Product / Availability Status Banner -->
+          <div class="saved-product-alert" id="savedProductAlert">
+            <div class="alert-icon-col" id="alertIconCol">
+              <svg id="alertIconSvg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            </div>
+            <div class="alert-body">
+              <div class="alert-badge-row">
+                <span class="alert-chip chip-success" id="alertChipStatus">Availability Status</span>
+                <span class="alert-chip chip-meta" id="alertFirstScannedBadge" style="display:none;">First Scanned: -</span>
+                <span class="alert-chip chip-meta" id="alertScanCountBadge" style="display:none;">Scanned: 1x</span>
+              </div>
+              <h3 class="alert-title" id="alertTitleText">Product Status</h3>
+              <p class="alert-subtitle" id="alertSubtitleText">Status description</p>
+              <div class="alert-actions-row" id="alertActionsRow">
+                <button type="button" class="btn btn-sm btn-primary" id="btnAlertSaveProduct" style="display:none;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                  Save This Product to Inventory
+                </button>
+                <button type="button" class="btn btn-sm btn-accent" id="btnAlertIncrementStock" style="display:none;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  +1 Add to Stock
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stock & Inventory Quick Management Bar (when saved in inventory) -->
+          <div class="stock-management-box" id="stockManagementBox" style="display:none;">
+            <div class="stock-info-group">
+              <span class="stock-status-pill stock-status-available" id="stockStatusPill">In Stock</span>
+              <div class="stock-counter-group">
+                <button type="button" class="stock-counter-btn" id="btnStockMinus" title="Deduct 1 unit">&minus;</button>
+                <span class="stock-counter-val" id="stockQuantityVal">1</span>
+                <button type="button" class="stock-counter-btn" id="btnStockPlus" title="Add 1 unit">&plus;</button>
+              </div>
+              <span style="font-size:0.8rem; color:#94a3b8;">Units in Inventory</span>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button type="button" class="stock-btn-edit" id="btnEditSavedProduct">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                Edit Saved Details
+              </button>
+            </div>
+          </div>
+
+          <!-- Primary Data Box: Decoded Value -->
+          <div class="decoded-hero-box">
+            <div class="decoded-label-row">
+              <span class="decoded-title">EXACT DATA CONTAINED IN BARCODE</span>
+              <button id="btnCopyBarcodeVal" class="btn btn-xs btn-outline">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                Copy Content
+              </button>
+            </div>
+            <div class="decoded-main-value" id="decodedMainValue">-</div>
+            
+            <div class="pill-tags-row">
+              <span class="tag-pill tag-symbology" id="pillSymbology">CODE_128</span>
+              <span class="tag-pill tag-type" id="pillPayloadType">URL / Web Link</span>
+              <span class="tag-pill tag-length" id="pillLength">29 Chars</span>
+              <span class="tag-pill tag-charset" id="pillCharset">ASCII</span>
+              <span class="tag-pill tag-checksum" id="pillChecksum">Checksum N/A</span>
+            </div>
+
+            <!-- Optional URL Action Button -->
+            <div id="urlActionRow" style="margin-top: 12px; display: none;">
+              <a id="urlActionBtn" href="#" target="_blank" rel="noopener" class="btn btn-sm btn-accent">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                Open Decoded Destination URL &rarr;
+              </a>
+            </div>
+          </div>
+
+          <!-- Structured Barcode Data Breakdown (Fields, GS1 Segments, URL/GTIN components) -->
+          <div class="breakdown-card" id="breakdownCard">
+            <div class="breakdown-header">
+              <span class="breakdown-title">IDENTIFIED BARCODE FIELDS & STRUCTURE</span>
+              <span class="breakdown-badge" id="breakdownCountBadge">0 Fields</span>
+            </div>
+            <div class="breakdown-grid" id="breakdownGrid">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Product / Entity Card (if indexed in universal registries) -->
+          <div class="entity-card" id="entityCard">
+            <div class="entity-thumb-box" id="entityThumbBox">
+              <img id="entityImage" src="" alt="Item photo" class="entity-thumb">
+            </div>
+            <div class="entity-info">
+              <div class="entity-brand" id="entityBrand">Manufacturer / Brand</div>
+              <h3 class="entity-title" id="entityTitle">Item Title / Product Name</h3>
+              <div class="entity-category" id="entityCategory">Category</div>
+              <p class="entity-desc" id="entityDesc">Description</p>
+            </div>
+          </div>
+
+          <!-- Details Tabs -->
+          <div class="detail-subtabs">
+            <button class="subtab-btn active" data-subtab="tabTechnical">Technical Properties</button>
+            <button class="subtab-btn" data-subtab="tabRawJson">Raw JSON Payload</button>
+          </div>
+
+          <!-- Subtab 1: Technical Properties Grid -->
+          <div class="subtab-content active" id="tabTechnical">
+            <div class="specs-grid" id="technicalSpecsGrid">
+              <!-- Dynamically populated key-value specs -->
+            </div>
+          </div>
+
+          <!-- Subtab 2: Raw JSON Inspector for Devs -->
+          <div class="subtab-content" id="tabRawJson">
+            <div class="json-inspector-box">
+              <div class="json-actions">
+                <span class="json-title">C# Backend JSON Response:</span>
+                <button id="btnCopyJson" class="btn btn-xs btn-outline">Copy JSON</button>
+              </div>
+              <pre class="json-code" id="rawJsonCode">{}</pre>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Modal: Main Team C# Code Snippet -->
+  <div class="modal-backdrop" id="modalSnippet" style="display:none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="modal-tag">For Project Team</div>
+          <h3 class="modal-title">C# & .NET 8 Universal Barcode Scanner Service</h3>
+          <p class="modal-subtitle">Self-contained production service with optical ZXing.Net decoding and universal data extraction.</p>
+        </div>
+        <button id="btnCloseModal" class="btn-close-modal" aria-label="Close modal">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="code-instructions">
+          <h4><span class="step-num">1</span> Install Required NuGet Packages</h4>
+          <pre class="code-bash"><code>dotnet add package ZXing.Net
+dotnet add package SixLabors.ImageSharp --version 2.1.13
+dotnet add package ZXing.Net.Bindings.ImageSharp.V2</code></pre>
+
+          <h4><span class="step-num">2</span> Register In Your App's Dependency Injection (`Program.cs`)</h4>
+          <pre class="code-csharp"><code>builder.Services.AddUniversalBarcodeScanner();</code></pre>
+
+          <h4><span class="step-num">3</span> Complete Standalone C# File (`BarcodeProductModule.cs`)</h4>
+          <p>Drop this single file directly into your team's solution (Console, MAUI, WPF, Web API):</p>
+        </div>
+
+        <div class="code-editor-wrapper">
+          <div class="editor-header">
+            <span class="file-name">BarcodeProductModule.cs</span>
+            <button id="btnCopyCodeSnippet" class="btn btn-sm btn-primary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              Copy Complete C# File
+            </button>
+          </div>
+          <pre class="code-block-csharp" id="codeSnippetContent"><code>Loading C# code snippet...</code></pre>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <span class="footer-note">Saved in project root as <code>BarcodeProductModule.cs</code></span>
+        <button id="btnCloseModalBottom" class="btn btn-secondary">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Saved Products Inventory Drawer -->
+  <div class="modal-backdrop" id="modalInventory" style="display:none;">
+    <div class="modal-card inventory-modal-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="modal-tag">Persistent Database</div>
+          <h3 class="modal-title">Saved Products Inventory</h3>
+          <p class="modal-subtitle">Browse and manage all physical products saved from barcode scans.</p>
+        </div>
+        <button id="btnCloseInventoryModal" class="btn-close-modal" aria-label="Close modal">&times;</button>
+      </div>
+
+      <div class="modal-body" style="padding: 18px 24px;">
+        <div class="inventory-search-row">
+          <input type="text" id="inventorySearchInput" class="inventory-search-input" placeholder="Search saved products by barcode, title, brand, or category...">
+          <button type="button" class="btn btn-secondary btn-sm" id="btnRefreshInventory">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+            Refresh
+          </button>
+        </div>
+
+        <div class="inventory-table-wrapper">
+          <table class="inventory-table" id="inventoryTable">
+            <thead>
+              <tr>
+                <th>Barcode</th>
+                <th>Product & Brand</th>
+                <th>Category</th>
+                <th>Stock Units</th>
+                <th>Status</th>
+                <th>First Scanned</th>
+                <th>Scans</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="inventoryTableBody">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+          <div id="inventoryEmptyState" class="empty-inventory-state" style="display:none;">
+            <p>No products saved in inventory yet. Use "Scan & Save Product" or save from availability check.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <span class="footer-note" id="inventoryStatsNote">Total: 0 products</span>
+        <button id="btnCloseInventoryBottom" class="btn btn-secondary">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Edit Saved Product Details -->
+  <div class="modal-backdrop" id="modalEditProduct" style="display:none;">
+    <div class="modal-card" style="max-width: 580px;">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="modal-tag">Inventory Record</div>
+          <h3 class="modal-title">Edit Product Details</h3>
+          <p class="modal-subtitle">Update saved properties in local database.</p>
+        </div>
+        <button id="btnCloseEditModal" class="btn-close-modal" aria-label="Close modal">&times;</button>
+      </div>
+
+      <div class="modal-body" style="padding: 20px 24px;">
+        <form id="formEditProduct">
+          <div class="form-field-full">
+            <label class="form-label" for="editBarcode">Barcode (ID)</label>
+            <input type="text" id="editBarcode" class="form-control-input" readonly style="opacity: 0.7; font-family: var(--font-mono);">
+          </div>
+
+          <div class="form-field-full">
+            <label class="form-label" for="editTitle">Product Title / Name</label>
+            <input type="text" id="editTitle" class="form-control-input" required>
+          </div>
+
+          <div class="form-grid-2">
+            <div>
+              <label class="form-label" for="editBrand">Brand / Manufacturer</label>
+              <input type="text" id="editBrand" class="form-control-input">
+            </div>
+            <div>
+              <label class="form-label" for="editCategory">Category</label>
+              <input type="text" id="editCategory" class="form-control-input">
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div>
+              <label class="form-label" for="editQuantity">Stock Quantity</label>
+              <input type="number" id="editQuantity" class="form-control-input" min="0" value="1">
+            </div>
+            <div>
+              <label class="form-label" for="editPrice">Unit Price ($)</label>
+              <input type="number" id="editPrice" class="form-control-input" step="0.01" min="0" placeholder="0.00">
+            </div>
+          </div>
+
+          <div class="form-field-full">
+            <label class="form-label" for="editStatus">Availability Status</label>
+            <select id="editStatus" class="form-control-input">
+              <option value="Available">Available (In Stock)</option>
+              <option value="Low Stock">Low Stock</option>
+              <option value="Out of Stock">Out of Stock</option>
+            </select>
+          </div>
+
+          <div class="form-field-full">
+            <label class="form-label" for="editNotes">Notes / Location / SKU info</label>
+            <textarea id="editNotes" class="form-control-input" rows="2" placeholder="Warehouse shelf, internal notes, etc."></textarea>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button id="btnCancelEdit" class="btn btn-secondary">Cancel</button>
+        <button id="btnSaveProductChanges" class="btn btn-primary">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div id="toastNotification" class="toast">Action completed</div>
+
+  <script src="app.js"></script>
+</body>
+</html>
