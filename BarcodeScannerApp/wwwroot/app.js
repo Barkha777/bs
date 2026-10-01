@@ -493,6 +493,28 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!selectedFile) return;
 
     showLoadingState(true);
+
+    // 1. Try client-side optical decoding first (works 100% on Vercel without server)
+    if (typeof ZXing !== 'undefined') {
+      try {
+        const codeReader = new ZXing.BrowserMultiFormatReader();
+        const img = new Image();
+        img.src = previewImage.src;
+        await new Promise(r => { img.onload = r; });
+        const result = await codeReader.decodeFromImageElement(img);
+        if (result && result.getText()) {
+          const val = result.getText();
+          showToast(`Decoded: ${val}`);
+          await lookupProduct(val);
+          showLoadingState(false);
+          return;
+        }
+      } catch (err) {
+        console.log('Client optical decode notice:', err.message);
+      }
+    }
+
+    // 2. Fallback to API if client-side did not resolve
     const formData = new FormData();
     formData.append('file', selectedFile);
     formData.append('mode', currentWorkflowMode);

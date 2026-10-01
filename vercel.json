@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/api/health", "destination": "/api/health.js" },
+    { "source": "/api/samples", "destination": "/api/samples.js" },
+    { "source": "/api/product/:barcode*", "destination": "/api/product.js?barcode=:barcode*" },
+    { "source": "/api/code-snippet", "destination": "/BarcodeProductModule.cs" },
+    { "source": "/(.*)", "destination": "/$1" }
+  ]
+}
